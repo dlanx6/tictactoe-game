@@ -14,5 +14,5 @@ Mouse: Click on any empty cell in the grid to place your symbol (X or O).
 
 # Purpose of this project
 
-This project aims to practice Python OOP and AI algorithm, focused on the Minimax algorithm.
+This learning project aims to explore and practice Python OOP and Minimax algorithm, a fundamental AI algorithm used for decision-making and game theory.
 
