@@ -49,13 +49,10 @@ class Board:
         
         # Grid for Button references
         self.layout = [
-            [0, 1, 2],
-            [0, 1, 2],
-            [0, 1, 2],
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', ''],
         ]
-        
-        # Draw count
-        self.draw_count = 0
         
         # Widgets
         self.create_label()
@@ -78,7 +75,7 @@ class Board:
         # Player 1 Label
         self.player1_label = tk.Label(
             self.frame2,
-            text=f"Player: {self.game.player_1.score}",
+            text=f"Player 1: {self.game.player_1.score}",
             height=2,
             width=12,
             font=("Arial", 12),
@@ -90,7 +87,7 @@ class Board:
         # Player 2 Label
         self.player2_label = tk.Label(
             self.frame2,
-            text=f"Player AI: {self.game.player_2.score}",
+            text=f"Player 2: {self.game.player_2.score}",
             height=2,
             width=12,
             font=("Arial", 12),
@@ -139,12 +136,10 @@ class Board:
                 self.layout[row][col].config(text="" ,state="normal")
                 
         self.game.inputs = [
-                [0, 1, 2],
-                [0, 1, 2],
-                [0, 1, 2]
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', '']
         ]
-        
-        self.draw_count = 0
         
         self.symbols = Game.symbols.copy()
         print(f"Symbols: {self.symbols}")
@@ -152,11 +147,11 @@ class Board:
         # Player
         self.game.player_1.symbol = random.choice(self.symbols)
         self.symbols.remove(self.game.player_1.symbol)
-        print(f"Player: {self.game.player_1.symbol}")
+        print(f"Player 1: {self.game.player_1.symbol}")
         
         # Player AI
         self.game.player_2.symbol = self.symbols[0]
-        print(f"AI: {self.game.player_2.symbol}\n")
+        print(f"Player 2: {self.game.player_2.symbol}\n")
         
         # Determine whose turn it is, based on the symbol they possess
         # (X always plays first, so player with the X plays first)
@@ -168,8 +163,6 @@ class Board:
         
     def button_click_handler(self, row, col):
         # Update the state and display Player symbol on the board
-        # Update draw count for potential draw
-        self.draw_count += 1
         self.layout[row][col].config(text=self.game.current_player.symbol, state="disabled", disabledforeground="red" if self.game.current_player.symbol == 'X' else "blue")
         
         # Determine Game State
@@ -183,22 +176,32 @@ class Board:
         self.game_label.config(text=f"{self.game.current_player.name}'s Turn")
         
         # Check for winner
-        if self.game.check_win() == 'Player' or self.game.check_win() == 'AI':
+        if self.game.check_win():
             for i in range(3):
                 for j in range(3):
                     self.layout[i][j].config(state="disabled")
                     
             self.game_label.config(text=f"{self.game.check_win()} Wins!")
             self.game.update_score(self.game.check_win())
-            if self.game.check_win() == "Player":
-                self.player1_label.config(text=f"Player: {self.game.player_1.score}")
+            
+            if self.game.check_win() == "Player 1":
+                self.player1_label.config(text=f"Player 1: {self.game.player_1.score}")
             else:
-                self.player2_label.config(text=f"Player AI: {self.game.player_2.score}")
+                self.player2_label.config(text=f"Player 2: {self.game.player_2.score}")
           
         # Check for draw
         else: 
-            if self.draw_count == 9:      
+            if self.is_full():      
                 self.game_label.config(text="Draw!")            
+ 
+ 
+    # Check if all cells are occupied resulting to draw
+    def is_full(self):
+        for row in self.layout:
+            for cell in row:
+                if cell.cget("text") == "":
+                    return False
+        return True    
  
  
     def Display(self):
@@ -212,10 +215,7 @@ class Player:
         self.name = name
         self.symbol = symbol
         self.score = score
- 
-class AI:
-    pass
- 
+        
     
 class Game:   
     symbols = ['X', 'O']
@@ -224,22 +224,22 @@ class Game:
         # Inputs for X and O should be stored here
         # This will be used for game logic
         self.inputs = [
-                [0, 1, 2],
-                [0, 1, 2],
-                [0, 1, 2]
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', '']
         ]
         
         self.symbols = Game.symbols.copy()
         print(f"Symbols: {self.symbols}")
         
         # Player
-        self.player_1 = Player("Player", random.choice(self.symbols), 0) 
+        self.player_1 = Player("Player 1", random.choice(self.symbols), 0) 
         self.symbols.remove(self.player_1.symbol)
-        print(f"Player: {self.player_1.symbol}")
+        print(f"Player 1: {self.player_1.symbol}")
         
         # Player AI
-        self.player_2 = Player("AI", self.symbols[0], 0)
-        print(f"AI: {self.player_2.symbol}\n")
+        self.player_2 = Player("Player 2", self.symbols[0], 0)
+        print(f"Player 2: {self.player_2.symbol}\n")
         
         # Determine whose turn it is, based on the symbol they possess
         # (X always plays first, so player with the X plays first)
@@ -254,66 +254,70 @@ class Game:
     
     
     def move_input(self, row, col, player):
-        if self.inputs[row][col] not in ['Player', 'AI']:
+        if self.inputs[row][col] not in ['Player 1', 'Player 2']:
             self.inputs[row][col] = player.name
     
     
     def check_win(self):
         for row in range(3):
-            player_count = 0
-            ai_count = 0
+            player1_count = 0
+            player2_count = 0
             
             for col in range(3):
                 # Check for horizontal lines
-                if self.inputs[row] in [['Player','Player','Player'], ['AI','AI','AI']]:
+                if self.inputs[row] in [['Player 1','Player 1','Player 1'], ['Player 2','Player 2','Player 2']]:
                     return self.inputs[row][col]
                 
                 # Check for vertical lines
-                if self.inputs[col][row] == 'Player':
-                    player_count += 1
-                    if player_count == 3:
-                        return 'Player'   
-                elif self.inputs[col][row] == 'AI':
-                    ai_count += 1
-                    if ai_count == 3:
-                        return 'AI'    
+                if self.inputs[col][row] == 'Player 1':
+                    player1_count += 1
+                    if player1_count == 3:
+                        return 'Player 1'   
+                elif self.inputs[col][row] == 'Player 2':
+                    player2_count += 1
+                    if player2_count == 3:
+                        return 'Player 2'    
          
          
-        player_diagonalX_count = 0
-        player_diagonalY_count = 0
+        player1_diagonalX_count = 0
+        player1_diagonalY_count = 0
         
-        ai_diagonalX_count = 0
-        ai_diagonalY_count = 0
+        player2_diagonalX_count = 0
+        player2_diagonalY_count = 0
             
         # Check for diagonal lines
         for i in range(3):
-            if self.inputs[i][i] == 'Player':
-                player_diagonalX_count += 1    
-            elif self.inputs[i][i] == 'AI':
-                ai_diagonalX_count += 1         
+            if self.inputs[i][i] == 'Player 1':
+                player1_diagonalX_count += 1    
+            elif self.inputs[i][i] == 'Player 2':
+                player2_diagonalX_count += 1         
     
         for i in range(3):
-            if self.inputs[i][2 - i] == 'Player':
-                player_diagonalY_count += 1
-            elif self.inputs[i][2 - i] == 'AI':
-                ai_diagonalY_count += 1
+            if self.inputs[i][2 - i] == 'Player 1':
+                player1_diagonalY_count += 1
+            elif self.inputs[i][2 - i] == 'Player 2':
+                player2_diagonalY_count += 1
               
-        if player_diagonalX_count == 3 or player_diagonalY_count == 3:
-            return 'Player'
-        elif ai_diagonalX_count == 3 or ai_diagonalY_count == 3:
-            return 'AI'            
+        if player1_diagonalX_count == 3 or player1_diagonalY_count == 3:
+            return 'Player 1'
+        elif player2_diagonalX_count == 3 or player2_diagonalY_count == 3:
+            return 'Player 2'            
     
     
     def update_score(self, winner):
-        if winner == "Player":
+        if winner == "Player 1":
             self.player_1.score += 1
         else:
             self.player_2.score += 1
+
   
+def main():
+    game = Game()
+    board = Board(game)
+
+    # Run Application
+    board.Display()
     
-game = Game()
-board = Board(game)
-
-
-# Run Application
-board.Display()
+    
+if __name__ == '__main__':
+    main()
