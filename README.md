@@ -1,4 +1,4 @@
-# Tic-tac-toe Game with AI
+# Tic-tac-toe Game with AI (Not yet implemented)
 
 A simple Tic-tac-toe game featuring an AI opponent.
 
